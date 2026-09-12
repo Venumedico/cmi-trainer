@@ -122,12 +122,13 @@ st.markdown("""
     li[role="option"] { color: #12242a !important; }
     li[role="option"]:hover { background-color: #e9f2f2 !important; }
 
-    /* Multiselect selected-item tags */
+    /* Multiselect selected-item tags — force solid teal bg + white text/icon on
+       every descendant, since BaseWeb nests the label in varying element types and a
+       narrow selector can end up with dark-on-dark text depending on theme config. */
     span[data-baseweb="tag"] {
-        background-color: #e9f2f2 !important; border: 1px solid #1d6e6e !important; border-radius: 5px !important;
+        background-color: #1d6e6e !important; border: none !important;
     }
-    span[data-baseweb="tag"] span { color: #1d6e6e !important; }
-    span[data-baseweb="tag"] svg { fill: #1d6e6e !important; }
+    span[data-baseweb="tag"] * { color: #ffffff !important; fill: #ffffff !important; }
 
     /* Radio buttons — color now comes correctly from theme primaryColor via config.toml;
        this just tightens spacing and label color. */
