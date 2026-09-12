@@ -6,97 +6,157 @@ from drg_data import (
 
 st.set_page_config(page_title="CMI Trainer", page_icon="🩺", layout="wide")
 
-# ---------- Styling: deep teal clinical theme ----------
+# ---------- Styling: light clinical theme (matches BFMC PDF dashboard) ----------
 st.markdown("""
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
     html, body, .stApp, [class*="css"] { font-family: 'IBM Plex Sans', -apple-system, sans-serif; }
-    .stApp { background-color: #0a1a1c; color: #eef7f7; }
-    .block-container { max-width: 920px; padding-top: 2.5rem; }
-    section[data-testid="stSidebar"] { background-color: #0e2124; }
-    h1, h2, h3, h4 { color: #f2fafa !important; font-weight: 600 !important; letter-spacing: -0.01em; }
-    p, span, label, .stMarkdown { color: #bdd4d4; }
-    hr { border-color: #1d3b3e; }
+    .stApp { background-color: #ffffff; color: #12242a; }
+    .block-container { max-width: 880px; padding-top: 3.2rem; padding-bottom: 3rem; }
+    section[data-testid="stSidebar"] { background-color: #f4f9f9; }
+    h1, h2, h3, h4 { color: #12242a !important; font-weight: 600 !important; letter-spacing: -0.01em; }
+    h4 { margin-top: 0.3rem !important; margin-bottom: 0.6rem !important; }
+    p, span, label, .stMarkdown { color: #45575a; }
+    hr { border-color: #e4ebeb; margin: 1.6rem 0 !important; }
+    ::selection { background-color: #c7dede; }
 
+    /* ---- App header ---- */
+    .app-header { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; padding-top: 4px; }
+    .app-icon {
+        width: 44px; height: 44px; border-radius: 10px; background: #1d6e6e;
+        display: flex; align-items: center; justify-content: center; font-size: 22px;
+        flex-shrink: 0;
+    }
+    .app-title { font-size: 1.9rem; font-weight: 700; color: #12242a; line-height: 1.1; margin: 0; letter-spacing: -0.015em; }
+    .app-subtitle { color: #7a8a8d; font-size: 0.95rem; margin: 6px 0 0 0; }
+
+    /* ---- Step headers with numbered badge ---- */
+    .step-header { display: flex; align-items: center; gap: 10px; margin: 1.6rem 0 0.5rem 0; }
+    .step-num {
+        width: 26px; height: 26px; border-radius: 50%; background: #1d6e6e; color: #ffffff;
+        font-size: 0.85rem; font-weight: 600; display: flex; align-items: center;
+        justify-content: center; flex-shrink: 0;
+    }
+    .step-title { font-size: 1.15rem; font-weight: 600; color: #12242a; }
+
+    /* ---- Diagnosis code chip (replaces jarring default markdown code spans) ---- */
+    .dx-code {
+        display: inline-block; background: #f4f9f9; color: #1d6e6e; border: 1px solid #c7dede;
+        border-radius: 5px; padding: 3px 9px; font-family: 'SFMono-Regular', Consolas, monospace;
+        font-size: 0.85rem; font-weight: 500;
+    }
+    .example-label { color: #7a8a8d; font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+
+    /* ---- Result / info cards ---- */
     .cmi-card {
-        background: #0f2226;
-        border: 1px solid #1d3b3e;
-        border-left: 3px solid #2e8a8a;
-        border-radius: 6px;
+        background: #f8fbfb;
+        border: 1px solid #e4ebeb;
+        border-left: 3px solid #1d6e6e;
+        border-radius: 8px;
         padding: 18px 22px;
         margin-bottom: 14px;
-        color: #eef7f7;
+        color: #12242a;
+        box-shadow: 0 1px 3px rgba(18, 36, 42, 0.04);
     }
-    .cmi-up { color: #4fbf8f; font-weight: 600; }
-    .cmi-down { color: #d97f6f; font-weight: 600; }
-    .cmi-flat { color: #8fa8a8; font-weight: 600; }
+    .cmi-card.result-hero { border-left-width: 4px; background: #f4f9f9; }
+    .cmi-weight { font-size: 1.6rem; font-weight: 700; color: #12242a; }
+    .cmi-meta { color: #7a8a8d; font-size: 0.88rem; }
+    .cmi-up { color: #3f9270; font-weight: 600; }
+    .cmi-down { color: #c25b4a; font-weight: 600; }
+    .cmi-flat { color: #7a8a8d; font-weight: 600; }
     .cmi-badge {
-        display: inline-block; background: #123033; color: #5fc9c9;
+        display: inline-block; background: #e9f2f2; color: #1d6e6e;
         border-radius: 4px; padding: 3px 10px; font-size: 0.78rem; margin-right: 6px;
-        border: 1px solid #1d4548; font-weight: 500; letter-spacing: 0.02em;
+        border: 1px solid #c7dede; font-weight: 500; letter-spacing: 0.02em;
+    }
+    .cmi-note {
+        background: #f4f9f9; border-left: 3px solid #1d6e6e; color: #354649;
+        border-radius: 6px; padding: 14px 18px; font-size: 0.92rem; line-height: 1.6;
+        margin-top: 4px;
     }
     .verify-flag {
-        background: #241f10; border-left: 3px solid #a8862f; color: #d9b872;
+        background: #fbf3e7; border-left: 3px solid #c98a2f; color: #8a5e1f;
         border-radius: 6px; padding: 10px 14px; font-size: 0.87rem; margin-top: 8px;
         line-height: 1.55;
     }
     .confirmed-flag {
-        background: #0d251e; border-left: 3px solid #3f9270; color: #7cd6ab;
+        background: #edf6f1; border-left: 3px solid #3f9270; color: #2a6b4c;
         border-radius: 6px; padding: 10px 14px; font-size: 0.87rem; margin-top: 8px;
         line-height: 1.55;
     }
     .criteria-box {
-        background: #0d1e21; border: 1px solid #1d3b3e; border-radius: 6px;
-        padding: 12px 16px; margin-top: 6px; font-size: 0.88rem; color: #bdd4d4;
+        background: #f8fafa; border: 1px solid #e4ebeb; border-radius: 6px;
+        padding: 12px 16px; margin-top: 6px; font-size: 0.88rem; color: #5a6b6e;
         line-height: 1.55;
     }
+    .footer-note { color: #a3b0b2; font-size: 0.82rem; text-align: center; margin-top: 0.5rem; }
 
     /* ---- Native Streamlit widget theming ---- */
-    .stCaption, [data-testid="stCaptionContainer"] { color: #6f9090 !important; }
+    .stCaption, [data-testid="stCaptionContainer"] p { color: #8a9699 !important; }
+
+    /* Alerts (st.info etc.) — override default blue to match palette */
+    div[data-testid="stAlert"] {
+        background-color: #f4f9f9 !important; border: 1px solid #c7dede !important;
+        border-left: 3px solid #1d6e6e !important; border-radius: 6px !important;
+        color: #354649 !important;
+    }
+    div[data-testid="stAlert"] p { color: #354649 !important; }
+    div[data-testid="stAlert"] svg { fill: #1d6e6e !important; }
 
     /* Expander */
     div[data-testid="stExpander"] {
-        background: #0f2226; border: 1px solid #1d3b3e; border-radius: 6px;
+        background: #fbfdfd; border: 1px solid #e4ebeb; border-radius: 8px;
+        box-shadow: 0 1px 2px rgba(18, 36, 42, 0.03);
     }
-    div[data-testid="stExpander"] summary { color: #eef7f7 !important; font-weight: 500; }
-    div[data-testid="stExpander"] summary:hover { color: #5fc9c9 !important; }
+    div[data-testid="stExpander"] summary { color: #12242a !important; font-weight: 500; padding: 0.7rem 1rem; }
+    div[data-testid="stExpander"] summary:hover { color: #1d6e6e !important; }
+    div[data-testid="stExpander"] summary svg { fill: #7a8a8d !important; }
 
     /* Selectbox / dropdowns */
     div[data-baseweb="select"] > div {
-        background-color: #0f2226 !important; border-color: #1d3b3e !important; color: #eef7f7 !important;
+        background-color: #ffffff !important; border-color: #c7dede !important; color: #12242a !important;
+        border-radius: 6px !important;
     }
-    ul[role="listbox"] { background-color: #0f2226 !important; }
-    li[role="option"] { color: #eef7f7 !important; }
-    li[role="option"]:hover { background-color: #123033 !important; }
+    div[data-baseweb="select"] > div:hover { border-color: #1d6e6e !important; }
+    ul[role="listbox"] { background-color: #ffffff !important; }
+    li[role="option"] { color: #12242a !important; }
+    li[role="option"]:hover { background-color: #e9f2f2 !important; }
 
     /* Multiselect selected-item tags */
     span[data-baseweb="tag"] {
-        background-color: #123033 !important; border: 1px solid #2e8a8a !important;
+        background-color: #e9f2f2 !important; border: 1px solid #1d6e6e !important; border-radius: 5px !important;
     }
-    span[data-baseweb="tag"] span { color: #5fc9c9 !important; }
-    span[data-baseweb="tag"] svg { fill: #5fc9c9 !important; }
+    span[data-baseweb="tag"] span { color: #1d6e6e !important; }
+    span[data-baseweb="tag"] svg { fill: #1d6e6e !important; }
 
-    /* Radio buttons */
-    div[role="radiogroup"] label { color: #bdd4d4 !important; }
-    div[role="radiogroup"] label div:first-child {
-        border-color: #2e8a8a !important;
-    }
-    div[role="radiogroup"] input:checked + div {
-        background-color: #2e8a8a !important; border-color: #2e8a8a !important;
-    }
+    /* Radio buttons — color now comes correctly from theme primaryColor via config.toml;
+       this just tightens spacing and label color. */
+    div[role="radiogroup"] label { color: #45575a !important; }
+    div[role="radiogroup"] { gap: 0.4rem; }
 
     /* Buttons */
     .stButton button, .stDownloadButton button {
-        background-color: #123033; color: #5fc9c9; border: 1px solid #2e8a8a;
+        background-color: #e9f2f2; color: #1d6e6e; border: 1px solid #1d6e6e; border-radius: 6px;
     }
     .stButton button:hover, .stDownloadButton button:hover {
-        background-color: #1d4548; color: #eef7f7; border-color: #4fbf8f;
+        background-color: #1d6e6e; color: #ffffff; border-color: #3f9270;
     }
+
+    /* Section divider spacing tightened via hr rule above; hide Streamlit's default
+       top padding/anchor link clutter on headers */
+    [data-testid="stHeaderActionElements"] { display: none; }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🩺 CMI Trainer")
-st.caption("Train your documentation eye: see how specifying a diagnosis moves the DRG weight — one case at a time.")
+st.markdown("""
+<div class="app-header">
+    <div class="app-icon">🩺</div>
+    <div>
+        <p class="app-title">CMI Trainer</p>
+        <p class="app-subtitle">Train your documentation eye: see how specifying a diagnosis moves the DRG weight — one case at a time.</p>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 with st.expander("⚠️ How to read this tool (read once)"):
     st.markdown("""
@@ -144,6 +204,22 @@ def render_myth_check(family_key):
         st.caption("Same principal diagnosis both columns — the only difference is whether the complication itself was documented.")
 
 
+def step_header(num, title):
+    st.markdown(f"""
+    <div class="step-header">
+        <div class="step-num">{num}</div>
+        <div class="step-title">{title}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def dx_example(label, code_text):
+    st.markdown(f"""
+    <div class="example-label">{label}</div>
+    <span class="dx-code">{code_text}</span>
+    """, unsafe_allow_html=True)
+
+
 def render_source_link(fam):
     url = fam.get("source_url")
     note = fam.get("source_note")
@@ -168,7 +244,7 @@ if mode == "Multi-diagnosis builder":
     family_keys = list(DIAGNOSIS_FAMILIES.keys())
     family_labels = [DIAGNOSIS_FAMILIES[k]["label"] for k in family_keys]
 
-    st.markdown("#### Step 1 — Principal diagnosis")
+    step_header(1, "Principal diagnosis")
     selected_label = st.selectbox("Choose the principal diagnosis family", family_labels, key="mb_family")
     selected_key = family_keys[family_labels.index(selected_label)]
     fam = DIAGNOSIS_FAMILIES[selected_key]
@@ -186,7 +262,7 @@ if mode == "Multi-diagnosis builder":
     render_myth_check(selected_key)
     render_source_link(fam)
 
-    st.markdown("#### Step 2 — Add secondary diagnoses")
+    step_header(2, "Add secondary diagnoses")
     st.caption("Pick every secondary condition that's actually documented for this case. The grouper applies CMS's real rule: the single HIGHEST-severity qualifying diagnosis sets the tier — additional CCs/MCCs beyond that one don't stack or add further weight.")
 
     dx_keys = list(SECONDARY_DX.keys())
@@ -210,11 +286,11 @@ if mode == "Multi-diagnosis builder":
             st.markdown(f'<div class="criteria-box">{dx["diagnostic_criteria"]}</div>', unsafe_allow_html=True)
             st.write("")
 
-    st.markdown("#### Result")
+    step_header(3, "Result")
     st.markdown(f"""
     <div class="cmi-card">
-    <b>Base (principal dx alone):</b> DRG {base['drg']} — {base['title']}<br>
-    Relative weight: {base['weight']:.4f}
+    <div class="cmi-meta">Base (principal dx alone) — DRG {base['drg']} — {base['title']}</div>
+    <span class="cmi-weight" style="font-size:1.3rem;">{base['weight']:.4f}</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -226,13 +302,13 @@ if mode == "Multi-diagnosis builder":
         arrow = "▲" if delta > 0 else ("▼" if delta < 0 else "—")
 
         st.markdown(f"""
-        <div class="cmi-card">
-        <b>Resulting DRG:</b> {winning_drg['drg']} — {winning_drg['title']}<br>
-        Relative weight: <span style="font-size:1.4rem; font-weight:700;">{winning_drg['weight']:.4f}</span>
-        &nbsp;&nbsp;·&nbsp;&nbsp; GMLOS: {winning_drg['gmlos']} days
+        <div class="cmi-card result-hero">
+        <div class="cmi-meta">Resulting DRG {winning_drg['drg']} — {winning_drg['title']}</div>
+        <span class="cmi-weight">{winning_drg['weight']:.4f}</span>
+        <span class="cmi-meta">&nbsp;&nbsp;·&nbsp;&nbsp; GMLOS: {winning_drg['gmlos']} days</span>
         <br><br>
-        <span class="{arrow_class}" style="font-size:1.3rem;">{arrow} {delta:+.4f} ({pct:+.1f}%)</span>
-        &nbsp;vs. the principal diagnosis alone
+        <span class="{arrow_class}" style="font-size:1.25rem;">{arrow} {delta:+.4f} ({pct:+.1f}%)</span>
+        <span class="cmi-meta">&nbsp;vs. the principal diagnosis alone</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -277,19 +353,19 @@ render_source_link(fam)
 # sort drgs from lowest to highest severity tier (None -> CC -> MCC / special)
 drgs_sorted = sorted(fam["drgs"], key=lambda d: d["weight"])
 
-st.markdown("#### Step 1 — Start with the base diagnosis")
-st.markdown(f"**Example:** `{fam['base_dx_example']}`")
+step_header(1, "Start with the base diagnosis")
+dx_example("Example", fam['base_dx_example'])
 base = drgs_sorted[0]
 st.markdown(f"""
 <div class="cmi-card">
-<b>DRG {base['drg']}</b> — {base['title']}<br>
-Relative weight: <span style="font-size:1.4rem; font-weight:700;">{base['weight']:.4f}</span>
-&nbsp;&nbsp;·&nbsp;&nbsp; GMLOS: {base['gmlos']} days
+<div class="cmi-meta">DRG {base['drg']} — {base['title']}</div>
+<span class="cmi-weight">{base['weight']:.4f}</span>
+<span class="cmi-meta">&nbsp;&nbsp;·&nbsp;&nbsp; GMLOS: {base['gmlos']} days</span>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("#### Step 2 — Now specify further (add the CC/MCC-bearing diagnosis)")
-st.markdown(f"**Example:** `{fam['cc_dx_example']}`")
+step_header(2, "Now specify further (add the CC/MCC-bearing diagnosis)")
+dx_example("Example", fam['cc_dx_example'])
 
 target_options = [f"DRG {d['drg']} — {d['title']} (weight {d['weight']:.4f})" for d in drgs_sorted[1:]]
 if target_options:
@@ -302,13 +378,13 @@ if target_options:
     arrow = "▲" if delta > 0 else ("▼" if delta < 0 else "—")
 
     st.markdown(f"""
-    <div class="cmi-card">
-    <b>DRG {target['drg']}</b> — {target['title']}<br>
-    Relative weight: <span style="font-size:1.4rem; font-weight:700;">{target['weight']:.4f}</span>
-    &nbsp;&nbsp;·&nbsp;&nbsp; GMLOS: {target['gmlos']} days
+    <div class="cmi-card result-hero">
+    <div class="cmi-meta">DRG {target['drg']} — {target['title']}</div>
+    <span class="cmi-weight">{target['weight']:.4f}</span>
+    <span class="cmi-meta">&nbsp;&nbsp;·&nbsp;&nbsp; GMLOS: {target['gmlos']} days</span>
     <br><br>
-    <span class="{arrow_class}" style="font-size:1.3rem;">{arrow} {delta:+.4f} ({pct:+.1f}%)</span>
-    &nbsp;vs. the base diagnosis
+    <span class="{arrow_class}" style="font-size:1.25rem;">{arrow} {delta:+.4f} ({pct:+.1f}%)</span>
+    <span class="cmi-meta">&nbsp;vs. the base diagnosis</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -320,7 +396,7 @@ if target_options:
     st.markdown(verify_html, unsafe_allow_html=True)
 
 st.markdown("#### Why this happens")
-st.info(fam["clinical_note"])
+st.markdown(f'<div class="cmi-note">{fam["clinical_note"]}</div>', unsafe_allow_html=True)
 
 st.divider()
 st.caption("CMI Trainer v1 · Built for physician education · Not for coding, billing, or compliance sign-off.")
